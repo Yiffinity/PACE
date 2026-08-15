@@ -1,0 +1,50 @@
+# Python environments, caches, and build metadata
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.orig
+*.rej
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+/apikey/
+
+# Datasets are local inputs and must not be versioned.
+/data/
+/datasets/
+
+# Models, weights, and training checkpoints are local artifacts.
+/model/
+/models/
+/weights/
+/checkpoints/
+/pretrained/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.hdf5
+*.pkl
+*.joblib
+
+# Generated experiment output
+/artifacts/
+/outputs/
+/runs/
+/logs/
+/wandb/
+/mlruns/
+/tensorboard/
