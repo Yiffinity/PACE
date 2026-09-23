@@ -16,8 +16,8 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from tqdm.auto import tqdm
 
-from verl.trainer.pace_plus_config import get_required, project_path
-from verl.trainer.pace_plus_pool import (
+from verl.trainer.pace_config import get_required, project_path
+from verl.trainer.pace_pool import (
     ConsolidationError,
     NORMALIZATION_METHOD,
     _active_ids,
@@ -34,7 +34,7 @@ from verl.trainer.pace_plus_pool import (
     _run_candidate_normalization_worker,
     _run_json_stage,
 )
-from verl.trainer.pace_plus_prompts import (
+from verl.trainer.pace_prompts import (
     CONSOLIDATION_SYSTEM_PROMPT,
     EXCLUSION_BOUNDARY_MERGE_SYSTEM_PROMPT,
     EXPERIENCE_MERGE_SYSTEM_PROMPT,
@@ -42,7 +42,7 @@ from verl.trainer.pace_plus_prompts import (
     exclusion_boundary_compression_system_prompt,
     experience_compression_system_prompt,
 )
-from verl.trainer.pace_plus_schema import (
+from verl.trainer.pace_schema import (
     SchemaError,
     append_jsonl,
     load_records_by_id,

@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 from copy import deepcopy
 
-from verl.trainer.pace_plus_prompts import BLIND_REASONING_SYSTEM_PROMPT, experience_conditioned_messages
+from verl.trainer.pace_prompts import BLIND_REASONING_SYSTEM_PROMPT, experience_conditioned_messages
 
 
 GOLD_TEACHER_INSTRUCTION = """Training-only teacher guidance:

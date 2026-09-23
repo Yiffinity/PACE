@@ -1,5 +1,5 @@
 project:
-  name: PACE_PLUS
+  name: PACE
   seed: 42
 
 task:
@@ -42,7 +42,7 @@ experience_extraction:
       teacher: "0"
       student: "1"
     show_progress: true
-    json_schema_path: configs/pace_plus_reasoning.schema.json
+    json_schema_path: configs/pace_reasoning.schema.json
     device_map: cuda:0
     chat_template_kwargs:
       enable_thinking: true
@@ -135,7 +135,7 @@ opcd:
   teacher_gpu_memory_utilization: 0.65
   chat_template_kwargs:
     enable_thinking: false
-  json_schema_path: configs/pace_plus_reasoning.schema.json
+  json_schema_path: configs/pace_reasoning.schema.json
 
 evaluation:
   output_path: evaluations

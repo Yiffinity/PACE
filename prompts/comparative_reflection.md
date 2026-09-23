@@ -1,8 +1,8 @@
-# PACE_PLUS Comparative Reflection Prompt (v13)
+# PACE Comparative Reflection Prompt (v13)
 
-> Contract version: pace-plus-comparative-reflection-v13-minimum-one-experience
+> Contract version: pace-comparative-reflection-v13-minimum-one-experience
 >
-> This is a readable copy of the prompt; the executable prompt is embedded in `verl/verl/trainer/pace_plus_reflection.py`.
+> This is a readable copy of the prompt; the executable prompt is embedded in `verl/verl/trainer/pace_reflection.py`.
 
 ## 0. Routing
 

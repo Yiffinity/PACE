@@ -1,4 +1,4 @@
-"""Fail-fast checks for PACE_PLUS model and tokenizer contracts."""
+"""Fail-fast checks for PACE model and tokenizer contracts."""
 
 from __future__ import annotations
 

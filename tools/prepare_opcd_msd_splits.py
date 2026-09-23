@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare PACE_PLUS experience-extraction, V_score, and OPD train JSONL files.
+"""Prepare PACE experience-extraction, V_score, and OPD train JSONL files.
 
 The effective gold-reference artifact is used only to choose clean extraction
 samples. V_score is the complete official validation split of MMSD2.0 and
@@ -145,7 +145,7 @@ def reference_is_schema_usable(gold_record: dict[str, Any]) -> bool:
         value = analysis[field]
         if not isinstance(value, str) or not value.strip():
             return False
-        # PACE_PLUS requires English narrative reasoning for model-side parsing.
+        # PACE requires English narrative reasoning for model-side parsing.
         letters = sum(char.isascii() and char.isalpha() for char in value)
         non_ascii_letters = sum((not char.isascii()) and char.isalpha() for char in value)
         if not letters or letters < non_ascii_letters:

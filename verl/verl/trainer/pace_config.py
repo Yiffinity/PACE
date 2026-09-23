@@ -15,7 +15,7 @@ def load_config(path: str | Path) -> dict[str, Any]:
     try:
         import yaml
     except ImportError as exc:
-        raise ConfigError("PyYAML is required to read PACE_PLUS configuration") from exc
+        raise ConfigError("PyYAML is required to read PACE configuration") from exc
     config_path = Path(path).expanduser().resolve()
     with config_path.open("r", encoding="utf-8") as handle:
         value = yaml.safe_load(handle)

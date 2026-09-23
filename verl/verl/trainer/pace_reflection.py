@@ -9,12 +9,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
-from verl.trainer.pace_plus_schema import Reasoning, SarcasmSample, SchemaError, parse_json_object
+from verl.trainer.pace_schema import Reasoning, SarcasmSample, SchemaError, parse_json_object
 
-PROMPT_VERSION = "pace-plus-comparative-reflection-v13-minimum-one-experience"
+PROMPT_VERSION = "pace-comparative-reflection-v13-minimum-one-experience"
 LEGACY_REFLECTION_CACHE_IDENTITIES = (
     (
-        "pace-plus-comparative-reflection-v12-shared-teacher-student-errors",
+        "pace-comparative-reflection-v12-shared-teacher-student-errors",
         "5a1ff5f158a9fbdd3b2486427333abd6e303314965194ae8c30ec64b56d7a9cf",
     ),
 )
@@ -81,7 +81,7 @@ def embedded_reflection_prompt_document() -> ReflectionPromptDocument:
         (EMBEDDED_REFLECTION_COMMON_PROMPT, EMBEDDED_SUCCESSFUL_SI, EMBEDDED_FAILED_SI, json.dumps(EMBEDDED_DATASET_GUIDANCE, sort_keys=True))
     )
     return ReflectionPromptDocument(
-        path="<embedded:pace_plus_reflection>",
+        path="<embedded:pace_reflection>",
         sha256=hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
         common=EMBEDDED_REFLECTION_COMMON_PROMPT,
         successful=EMBEDDED_SUCCESSFUL_SI,

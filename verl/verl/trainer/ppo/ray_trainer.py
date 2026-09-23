@@ -1677,12 +1677,12 @@ class RayPPOTrainer:
                         actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                         metrics.update(actor_output_metrics)
 
-                        if self.config.trainer.get("pace_plus_pilot", False):
-                            from verl.trainer.pace_plus_pilot import training_pilot_updates, update_pilot_summary
+                        if self.config.trainer.get("pace_pilot", False):
+                            from verl.trainer.pace_pilot import training_pilot_updates, update_pilot_summary
 
-                            summary_path = self.config.trainer.get("pace_plus_pilot_summary")
+                            summary_path = self.config.trainer.get("pace_pilot_summary")
                             if not summary_path:
-                                raise RuntimeError("PACE_PLUS pilot requires trainer.pace_plus_pilot_summary")
+                                raise RuntimeError("PACE pilot requires trainer.pace_pilot_summary")
                             update_pilot_summary(
                                 summary_path,
                                 training_pilot_updates(batch, self.tokenizer, metrics),

@@ -1,4 +1,4 @@
-"""PACE+ experience-conditioned teacher scoring for VeRL online distillation."""
+"""PACE experience-conditioned teacher scoring for VeRL online distillation."""
 
 from __future__ import annotations
 
@@ -10,9 +10,9 @@ import torch
 from omegaconf import OmegaConf
 
 from verl.experimental.agent_loop.agent_loop import AgentLoopManager, AgentLoopOutput, AgentLoopWorker
-from verl.trainer.pace_plus_pool import load_active_experience_text
-from verl.trainer.pace_plus_prompts import experience_conditioned_messages
-from verl.trainer.pace_plus_selected_context import selected_teacher_messages
+from verl.trainer.pace_pool import load_active_experience_text
+from verl.trainer.pace_prompts import experience_conditioned_messages
+from verl.trainer.pace_selected_context import selected_teacher_messages
 from verl.utils.chat_template import apply_chat_template
 from verl.utils.tokenizer import build_multimodal_processor_inputs, normalize_token_ids
 
@@ -33,7 +33,7 @@ def align_teacher_response(
     if teacher_ids.shape != teacher_logprobs.shape:
         raise RuntimeError("teacher IDs and logprobs have different shapes")
     if teacher_ids.shape[1] != 1:
-        raise RuntimeError("PACE_PLUS k3 distillation requires sampled-token teacher logprobs (topk=1)")
+        raise RuntimeError("PACE k3 distillation requires sampled-token teacher logprobs (topk=1)")
 
     response_length = len(response_ids)
     if not student_prompt_ids or teacher_prompt_length < 1 or not response_ids:
@@ -57,23 +57,23 @@ def align_teacher_response(
     return aligned_ids, aligned_logprobs
 
 
-class PacePlusAgentLoopWorker(AgentLoopWorker):
+class PaceAgentLoopWorker(AgentLoopWorker):
     """Score student responses with the frozen teacher under consolidated experience."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.distillation_enabled:
-            raise RuntimeError("PACE_PLUS requires distillation.enabled=True")
-        self.selected_context = bool(OmegaConf.select(self.config, "trainer.pace_plus_selected_context", default=False))
-        self.teacher_group = OmegaConf.select(self.config, "trainer.pace_plus_teacher_group")
+            raise RuntimeError("PACE requires distillation.enabled=True")
+        self.selected_context = bool(OmegaConf.select(self.config, "trainer.pace_selected_context", default=False))
+        self.teacher_group = OmegaConf.select(self.config, "trainer.pace_teacher_group")
         if self.selected_context:
             if not self.teacher_group:
-                raise RuntimeError("selected OPD requires trainer.pace_plus_teacher_group")
+                raise RuntimeError("selected OPD requires trainer.pace_teacher_group")
             self.experience_text = ""
             return
-        experience_path = OmegaConf.select(self.config, "trainer.pace_plus_experience_path")
+        experience_path = OmegaConf.select(self.config, "trainer.pace_experience_path")
         if not experience_path:
-            raise RuntimeError("PACE_PLUS requires trainer.pace_plus_experience_path")
+            raise RuntimeError("PACE requires trainer.pace_experience_path")
         self.experience_text = load_active_experience_text(experience_path)
 
     def _teacher_prompt_ids(self, output: AgentLoopOutput, raw_prompt: Any, context=None) -> list[int]:
@@ -121,9 +121,9 @@ class PacePlusAgentLoopWorker(AgentLoopWorker):
         if validate:
             return
         if not response_ids:
-            raise RuntimeError("PACE_PLUS received an empty student response")
+            raise RuntimeError("PACE received an empty student response")
         if sample_kwargs is None or "raw_prompt" not in sample_kwargs:
-            raise RuntimeError("PACE_PLUS teacher scoring requires the original raw_prompt")
+            raise RuntimeError("PACE teacher scoring requires the original raw_prompt")
 
         extra_info = sample_kwargs.get("extra_info", {})
         context = extra_info.get("teacher_context")
@@ -131,12 +131,12 @@ class PacePlusAgentLoopWorker(AgentLoopWorker):
             raise RuntimeError("teacher context is missing or does not match the student sample")
         teacher_prompt_ids = self._teacher_prompt_ids(output, sample_kwargs["raw_prompt"], context)
         teacher_max_length = int(
-            OmegaConf.select(self.config, "trainer.pace_plus_teacher_max_model_len", default=0)
+            OmegaConf.select(self.config, "trainer.pace_teacher_max_model_len", default=0)
         )
         if teacher_max_length and len(teacher_prompt_ids) + len(response_ids) + 1 > teacher_max_length:
             raise RuntimeError(
                 "experience-conditioned teacher sequence exceeds "
-                f"pace_plus_teacher_max_model_len={teacher_max_length}"
+                f"pace_teacher_max_model_len={teacher_max_length}"
             )
 
         routing_key = None
@@ -161,9 +161,9 @@ class PacePlusAgentLoopWorker(AgentLoopWorker):
         output.extra_fields["teacher_logprobs"] = aligned_logprobs
 
 
-class PacePlusAgentLoopManager(AgentLoopManager):
-    """Install the PACE+ worker while retaining VeRL's native manager lifecycle."""
+class PaceAgentLoopManager(AgentLoopManager):
+    """Install the PACE worker while retaining VeRL's native manager lifecycle."""
 
     def __init__(self, *args, **kwargs):
-        self.agent_loop_workers_class = ray.remote(PacePlusAgentLoopWorker)
+        self.agent_loop_workers_class = ray.remote(PaceAgentLoopWorker)
         super().__init__(*args, **kwargs)

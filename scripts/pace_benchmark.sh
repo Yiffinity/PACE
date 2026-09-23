@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CONFIG="${PROJECT_ROOT}/configs/pace_plus_msd.yaml"
+CONFIG="${PROJECT_ROOT}/configs/pace_msd.yaml"
 DEVICES="0,1"
 EXTRA=()
 while [[ $# -gt 0 ]]; do
@@ -15,5 +15,5 @@ done
 
 export PYTHONPATH="${PROJECT_ROOT}/verl${PYTHONPATH:+:${PYTHONPATH}}"
 export TOKENIZERS_PARALLELISM=false
-exec python3 "${PROJECT_ROOT}/tools/pace_plus_cli.py" \
+exec python3 "${PROJECT_ROOT}/tools/pace_cli.py" \
   --config "${CONFIG}" benchmark --devices "${DEVICES}" "${EXTRA[@]}"

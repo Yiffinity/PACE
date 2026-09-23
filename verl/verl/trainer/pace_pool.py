@@ -1,4 +1,4 @@
-"""Shared helpers for PACE_PLUS weighted experience refinement."""
+"""Shared helpers for PACE weighted experience refinement."""
 
 from __future__ import annotations
 
@@ -9,14 +9,14 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-from verl.trainer.pace_plus_modeling import (
+from verl.trainer.pace_modeling import (
     MultimodalGenerator,
     VllmTextGenerator,
 )
-from verl.trainer.pace_plus_prompts import (
+from verl.trainer.pace_prompts import (
     CANDIDATE_NORMALIZATION_SYSTEM_PROMPT,
 )
-from verl.trainer.pace_plus_schema import (
+from verl.trainer.pace_schema import (
     SchemaError,
     generate_json_with_retries,
     load_records_by_id,

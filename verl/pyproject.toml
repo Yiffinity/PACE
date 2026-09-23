@@ -20,7 +20,7 @@ dynamic = ["version", "dependencies", "optional-dependencies", "authors", "urls"
 
 description = "verl: Volcano Engine Reinforcement Learning for LLM"
 license = {text = "Apache-2.0"}  # Changed from file to text format
-readme = {text = "Vendored VeRL runtime with PACE_PLUS extensions. See the repository README for usage.", content-type = "text/markdown"}
+readme = {text = "Vendored VeRL runtime with PACE extensions. See the repository README for usage.", content-type = "text/markdown"}
 requires-python = ">=3.10"
 
 # -------------------------------

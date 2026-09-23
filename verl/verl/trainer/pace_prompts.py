@@ -1,4 +1,4 @@
-"""Central prompt definitions and message construction for PACE_PLUS."""
+"""Central prompt definitions and message construction for PACE."""
 
 from __future__ import annotations
 

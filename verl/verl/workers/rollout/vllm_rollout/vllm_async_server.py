@@ -503,12 +503,12 @@ class vLLMHttpServer:
         sampling_params["logprobs"] = 0 if sampling_params.pop("logprobs", False) else None
         sampling_params.setdefault("repetition_penalty", self.config.get("repetition_penalty", 1.0))
 
-        # PACE_PLUS passes a private marker so this adapter can support both
+        # PACE passes a private marker so this adapter can support both
         # current vLLM structured_outputs and older guided_json releases.
-        pace_plus_structured = sampling_params.pop("pace_plus_structured_outputs", None)
+        pace_structured = sampling_params.pop("pace_structured_outputs", None)
         json_schema = None
-        if isinstance(pace_plus_structured, dict) and isinstance(pace_plus_structured.get("json"), dict):
-            json_schema = pace_plus_structured["json"]
+        if isinstance(pace_structured, dict) and isinstance(pace_structured.get("json"), dict):
+            json_schema = pace_structured["json"]
             try:
                 from vllm.sampling_params import StructuredOutputsParams
             except (ImportError, AttributeError):
@@ -534,7 +534,7 @@ class vLLMHttpServer:
                 sampling_params = SamplingParams(max_tokens=max_tokens, **sampling_params)
             except (TypeError, ValueError) as fallback_exc:
                 raise RuntimeError(
-                    "PACE_PLUS requires vLLM JSON structured outputs (structured_outputs or guided_json)"
+                    "PACE requires vLLM JSON structured outputs (structured_outputs or guided_json)"
                 ) from fallback_exc
         prompt_ids = qwen2_5_vl_dedup_image_tokens(prompt_ids, self.model_config.processor)
         multi_modal_data = {}

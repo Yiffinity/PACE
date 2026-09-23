@@ -1,4 +1,4 @@
-# Runtime dependencies for the PACE_PLUS multimodal pipeline.
+# Runtime dependencies for the PACE multimodal pipeline.
 # Install a CUDA-compatible PyTorch build when the default wheel does not match
 # the driver on the target machine.
 torch==2.11.0

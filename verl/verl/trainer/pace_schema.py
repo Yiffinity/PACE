@@ -1,4 +1,4 @@
-"""Strict task schemas and JSONL utilities for PACE_PLUS."""
+"""Strict task schemas and JSONL utilities for PACE."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ REASONING_JSON_SCHEMA: dict[str, Any] = {
 
 
 class SchemaError(ValueError):
-    """Raised when an artifact violates a PACE_PLUS data contract."""
+    """Raised when an artifact violates a PACE data contract."""
 
 
 @dataclass(frozen=True)

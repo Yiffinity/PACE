@@ -30,15 +30,15 @@ class LauncherTests(unittest.TestCase):
                 encoding="utf-8",
             )
             interpreter.chmod(0o755)
-            env = {key: value for key, value in os.environ.items() if not key.startswith("PACE_PLUS_")}
+            env = {key: value for key, value in os.environ.items() if not key.startswith("PACE_")}
             env.update(
                 PYTHON_BIN=str(interpreter),
-                PACE_PLUS_GROUP=group,
+                PACE_GROUP=group,
                 PACE_TEST_CALLS=str(calls),
                 PACE_TEST_FAIL_AT=fail_at,
             )
             result = subprocess.run(
-                ["bash", str(ROOT / "scripts" / "run_pace_plus.sh")],
+                ["bash", str(ROOT / "scripts" / "run_pace.sh")],
                 cwd=root,
                 env=env,
                 capture_output=True,
@@ -53,7 +53,7 @@ class LauncherTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(calls), 8)
         self.assertEqual(
-            [call[3] for call in calls if Path(call[0]).name == "pace_plus_cli.py"],
+            [call[3] for call in calls if Path(call[0]).name == "pace_cli.py"],
             ["preflight", "generate-reasonings", "extract", "consolidate", "consolidate", "consolidate", "train"],
         )
         train = calls[-1]

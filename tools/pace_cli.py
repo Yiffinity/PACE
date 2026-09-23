@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Command-line entry points for the PACE_PLUS workflow."""
+"""Command-line entry points for the PACE workflow."""
 
 from __future__ import annotations
 
@@ -23,16 +23,16 @@ if "verl" not in sys.modules:
     verl_package.__package__ = "verl"
     sys.modules["verl"] = verl_package
 
-from verl.trainer.pace_plus_benchmark import run_benchmark
-from verl.trainer.pace_plus_config import get_required, load_config, project_path
-from verl.trainer.pace_plus_data import normalize_record, to_verl_record
-from verl.trainer.pace_plus_evaluation import run_evaluation
-from verl.trainer.pace_plus_extraction import run_extraction, run_reasoning_generation
-from verl.trainer.pace_plus_pool import load_active_experience_text
-from verl.trainer.pace_plus_preflight import validate_model_pair
-from verl.trainer.pace_plus_reflection import embedded_reflection_prompt_document
-from verl.trainer.pace_plus_schema import REASONING_JSON_SCHEMA, SchemaError, read_jsonl
-from verl.trainer.pace_plus_weighted_pool import run_weighted_reference_pipeline
+from verl.trainer.pace_benchmark import run_benchmark
+from verl.trainer.pace_config import get_required, load_config, project_path
+from verl.trainer.pace_data import normalize_record, to_verl_record
+from verl.trainer.pace_evaluation import run_evaluation
+from verl.trainer.pace_extraction import run_extraction, run_reasoning_generation
+from verl.trainer.pace_pool import load_active_experience_text
+from verl.trainer.pace_preflight import validate_model_pair
+from verl.trainer.pace_reflection import embedded_reflection_prompt_document
+from verl.trainer.pace_schema import REASONING_JSON_SCHEMA, SchemaError, read_jsonl
+from verl.trainer.pace_weighted_pool import run_weighted_reference_pipeline
 
 
 def _json(value: Any) -> None:
@@ -180,7 +180,7 @@ def _preflight(config: Mapping[str, Any]) -> dict[str, Any]:
     teacher_gpus = int(opcd.get("teacher_gpus_per_node", 0))
     if total_gpus != 2 or actor_gpus != 1 or teacher_gpus != 1:
         raise RuntimeError(
-            "PACE_PLUS is configured for exactly two GPUs: "
+            "PACE is configured for exactly two GPUs: "
             "opcd.n_gpus_per_node=2, actor_gpus_per_node=1, teacher_gpus_per_node=1"
         )
     if actor_gpus + teacher_gpus != total_gpus:
@@ -200,7 +200,7 @@ def _preflight(config: Mapping[str, Any]) -> dict[str, Any]:
     artifacts["comparative_prompt"] = prompt_document.path
 
     schema_path = project_path(
-        config, config.get("opcd", {}).get("json_schema_path", "configs/pace_plus_reasoning.schema.json")
+        config, config.get("opcd", {}).get("json_schema_path", "configs/pace_reasoning.schema.json")
     )
     try:
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -209,7 +209,7 @@ def _preflight(config: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(schema, dict) or schema.get("type") != "object" or schema.get("additionalProperties") is not False:
         raise RuntimeError(f"opcd.json_schema_path must be an object schema with additionalProperties=false: {schema_path}")
     if schema != REASONING_JSON_SCHEMA:
-        raise RuntimeError(f"opcd.json_schema_path must match the PACE_PLUS reasoning schema: {schema_path}")
+        raise RuntimeError(f"opcd.json_schema_path must match the PACE reasoning schema: {schema_path}")
 
     result = validate_model_pair(
         get_required(config, "models.teacher.path"),
@@ -240,7 +240,7 @@ def _training_command(
     steps = 1 if pilot else int(opcd["total_training_steps"])
     summary = project_path(config, config.get("pilot", {}).get("summary_path", "pilot_summary.json"))
     schema_path = project_path(
-        config, opcd.get("json_schema_path", "configs/pace_plus_reasoning.schema.json")
+        config, opcd.get("json_schema_path", "configs/pace_reasoning.schema.json")
     )
     student_thinking = bool(opcd.get("chat_template_kwargs", {}).get("enable_thinking", False))
     response_length = int(opcd["max_response_length"])
@@ -249,7 +249,7 @@ def _training_command(
     max_prompt_length = student_context - response_length
     if max_prompt_length <= 0:
         raise RuntimeError("student context length must exceed opcd.max_response_length")
-    reward_path = PROJECT_ROOT / "verl" / "verl" / "trainer" / "pace_plus_reward.py"
+    reward_path = PROJECT_ROOT / "verl" / "verl" / "trainer" / "pace_reward.py"
     command = [
         sys.executable,
         "-m",
@@ -293,7 +293,7 @@ def _training_command(
         "actor_rollout_ref.rollout.enable_prefix_caching=False",
         f"actor_rollout_ref.rollout.agent.num_workers={opcd['agent_loop_workers']}",
         "+actor_rollout_ref.rollout.agent.agent_loop_manager_class="
-        "verl.trainer.pace_plus_agent_loop.PacePlusAgentLoopManager",
+        "verl.trainer.pace_agent_loop.PaceAgentLoopManager",
         "algorithm.use_kl_in_reward=False",
         "reward.reward_model.enable=False",
         "reward.num_workers=1",
@@ -319,18 +319,18 @@ def _training_command(
         "distillation.distillation_loss.use_policy_gradient=False",
         "distillation.distillation_loss.loss_max_clamp=10.0",
         "distillation.distillation_loss.log_prob_min_clamp=-10.0",
-        "+trainer.pace_plus=True",
-        f"+trainer.pace_plus_json_schema_path={schema_path}",
-        f"+trainer.pace_plus_teacher_path={get_required(config, 'models.teacher.path')}",
-        f"+trainer.pace_plus_student_path={get_required(config, 'models.student.path')}",
-        f"+trainer.pace_plus_pilot_summary={summary}",
-        f"+trainer.pace_plus_pilot={str(pilot).lower()}",
-        f"+trainer.pace_plus_experience_path={experience_path}",
-        f"+trainer.pace_plus_teacher_max_model_len={teacher_context}",
+        "+trainer.pace=True",
+        f"+trainer.pace_json_schema_path={schema_path}",
+        f"+trainer.pace_teacher_path={get_required(config, 'models.teacher.path')}",
+        f"+trainer.pace_student_path={get_required(config, 'models.student.path')}",
+        f"+trainer.pace_pilot_summary={summary}",
+        f"+trainer.pace_pilot={str(pilot).lower()}",
+        f"+trainer.pace_experience_path={experience_path}",
+        f"+trainer.pace_teacher_max_model_len={teacher_context}",
         "trainer.val_before_train=False",
         "trainer.critic_warmup=0",
         "trainer.logger=['console']",
-        "trainer.project_name=PACE_PLUS",
+        "trainer.project_name=PACE",
         f"trainer.resume_mode={'disable' if pilot else 'auto'}",
         f"trainer.save_freq={-1 if pilot else opcd['save_freq']}",
         f"trainer.n_gpus_per_node={opcd['actor_gpus_per_node']}",
@@ -389,12 +389,12 @@ def run_training(config: Mapping[str, Any], data: str | Path, *, pilot: bool) ->
         )
         _write_summary(config, {"status": "passed" if passed else "failed"})
         if not passed:
-            raise RuntimeError(f"PACE_PLUS pilot acceptance failed; inspect {summary_path}")
+            raise RuntimeError(f"PACE pilot acceptance failed; inspect {summary_path}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default=str(PROJECT_ROOT / "configs/pace_plus_msd.yaml"))
+    parser.add_argument("--config", default=str(PROJECT_ROOT / "configs/pace_msd.yaml"))
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("preflight")
@@ -461,8 +461,8 @@ def main() -> None:
 
     args = parser.parse_args()
     config = load_config(args.config)
-    teacher_model = getattr(args, "teacher_model", None) or os.environ.get("PACE_PLUS_TEACHER_MODEL")
-    student_model = getattr(args, "student_model", None) or os.environ.get("PACE_PLUS_STUDENT_MODEL")
+    teacher_model = getattr(args, "teacher_model", None) or os.environ.get("PACE_TEACHER_MODEL")
+    student_model = getattr(args, "student_model", None) or os.environ.get("PACE_STUDENT_MODEL")
     if teacher_model:
         config["models"]["teacher"]["path"] = str(project_path(config, teacher_model))
     if student_model:

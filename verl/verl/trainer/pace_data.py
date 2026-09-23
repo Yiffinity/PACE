@@ -7,8 +7,8 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from verl.trainer.pace_plus_prompts import verl_blind_messages
-from verl.trainer.pace_plus_schema import Reasoning, SarcasmSample, SchemaError, validate_reasoning, validate_sample
+from verl.trainer.pace_prompts import verl_blind_messages
+from verl.trainer.pace_schema import Reasoning, SarcasmSample, SchemaError, validate_reasoning, validate_sample
 
 
 FIELD_ALIASES = {
@@ -85,7 +85,7 @@ def normalize_record(record: Mapping[str, Any], *, base_dir: str | Path, require
 def to_verl_record(sample: SarcasmSample, *, split: str, index: int) -> dict[str, Any]:
     """Return only trainer-facing fields; references and extraction metadata never enter VeRL."""
     return {
-        "data_source": "pace_plus_msd",
+        "data_source": "pace_msd",
         "prompt": verl_blind_messages(sample.text),
         "images": [{"image": sample.image_path}],
         "ability": "multimodal_sarcasm_detection",

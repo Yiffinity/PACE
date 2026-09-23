@@ -20,8 +20,8 @@ trainer_package = ModuleType("verl.trainer")
 trainer_package.__path__ = [str(TRAINER)]
 sys.modules.setdefault("verl.trainer", trainer_package)
 
-import verl.trainer.pace_plus_benchmark as benchmark_module
-from verl.trainer.pace_plus_benchmark import (
+import verl.trainer.pace_benchmark as benchmark_module
+from verl.trainer.pace_benchmark import (
     BenchmarkDataset,
     _append_prediction_records,
     _compact_predictions,
@@ -30,9 +30,9 @@ from verl.trainer.pace_plus_benchmark import (
     _plan_dataset,
     load_benchmark_datasets,
 )
-from verl.trainer.pace_plus_config import load_config, project_path
-from verl.trainer.pace_plus_metrics import classification_metrics
-from verl.trainer.pace_plus_schema import SarcasmSample
+from verl.trainer.pace_config import load_config, project_path
+from verl.trainer.pace_metrics import classification_metrics
+from verl.trainer.pace_schema import SarcasmSample
 
 
 VALID_REASONING = {
@@ -45,7 +45,7 @@ VALID_REASONING = {
 
 class BenchmarkDatasetTests(unittest.TestCase):
     def test_all_configured_test_sets_load(self):
-        config = load_config(ROOT / "configs" / "pace_plus_msd.yaml")
+        config = load_config(ROOT / "configs" / "pace_msd.yaml")
         for spec in config["benchmark_evaluation"]["datasets"].values():
             paths = [spec["test_path"]] if "test_path" in spec else spec["test_paths"].values()
             if any(not project_path(config, path).is_file() for path in paths):
@@ -363,10 +363,10 @@ class BenchmarkEndToEndTests(unittest.TestCase):
 
     def test_same_command_resumes_without_reloading_model(self):
         with tempfile.TemporaryDirectory() as directory:
-            config = load_config(ROOT / "configs" / "pace_plus_msd.yaml")
+            config = load_config(ROOT / "configs" / "pace_msd.yaml")
             teacher_model = Path(
                 os.environ.get(
-                    "PACE_PLUS_TEACHER_MODEL",
+                    "PACE_TEACHER_MODEL",
                     config["models"]["teacher"]["path"],
                 )
             )
@@ -375,7 +375,7 @@ class BenchmarkEndToEndTests(unittest.TestCase):
             config["models"]["teacher"]["path"] = str(teacher_model)
             if not (teacher_model / "config.json").is_file():
                 self.skipTest(
-                    "provide PACE_PLUS_TEACHER_MODEL or models/Qwen3.5-9B "
+                    "provide PACE_TEACHER_MODEL or models/Qwen3.5-9B "
                     "to run checkpoint-backed benchmark tests"
                 )
             dataset_path = config["benchmark_evaluation"]["datasets"]["mmsd2"]["test_path"]

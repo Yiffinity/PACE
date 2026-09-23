@@ -74,7 +74,7 @@ extras_require = {
 
 
 long_description = (
-    "Vendored VeRL runtime with PACE_PLUS multimodal experience mining and "
+    "Vendored VeRL runtime with PACE multimodal experience mining and "
     "on-policy distillation extensions. See the repository README for usage."
 )
 

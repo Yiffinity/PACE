@@ -7,14 +7,14 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from verl.trainer.pace_plus_config import project_path
-from verl.trainer.pace_plus_data import normalize_record
-from verl.trainer.pace_plus_modeling import MultimodalGenerator
-from verl.trainer.pace_plus_metrics import classification_metrics
-from verl.trainer.pace_plus_pool import load_active_experience_text
-from verl.trainer.pace_plus_preflight import inspect_checkpoint
-from verl.trainer.pace_plus_prompts import BLIND_REASONING_SYSTEM_PROMPT, blind_messages, experience_conditioned_messages
-from verl.trainer.pace_plus_schema import (
+from verl.trainer.pace_config import project_path
+from verl.trainer.pace_data import normalize_record
+from verl.trainer.pace_modeling import MultimodalGenerator
+from verl.trainer.pace_metrics import classification_metrics
+from verl.trainer.pace_pool import load_active_experience_text
+from verl.trainer.pace_preflight import inspect_checkpoint
+from verl.trainer.pace_prompts import BLIND_REASONING_SYSTEM_PROMPT, blind_messages, experience_conditioned_messages
+from verl.trainer.pace_schema import (
     generate_json_with_retries,
     load_records_by_id,
     parse_reasoning,

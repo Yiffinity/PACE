@@ -217,21 +217,21 @@ runtime/
 
 # Keep only the public launchers from the research workspace.
 scripts/*
-!scripts/run_pace_plus.sh
-!scripts/pace_plus_prepare_experience_splits.sh
-!scripts/pace_plus_generate_reasonings.sh
-!scripts/pace_plus_extract_experiences.sh
-!scripts/pace_plus_refine_experiences.sh
-!scripts/pace_plus_train_opcd.sh
-!scripts/pace_plus_eval.sh
-!scripts/pace_plus_benchmark.sh
+!scripts/run_pace.sh
+!scripts/pace_prepare_experience_splits.sh
+!scripts/pace_generate_reasonings.sh
+!scripts/pace_extract_experiences.sh
+!scripts/pace_refine_experiences.sh
+!scripts/pace_train_opcd.sh
+!scripts/pace_eval.sh
+!scripts/pace_benchmark.sh
 
 # Keep the main public tools.
 tools/*
-!tools/pace_plus_cli.py
+!tools/pace_cli.py
 !tools/prepare_pairwise_experience_splits.py
 !tools/prepare_opcd_msd_splits.py
-!tools/validate_pace_plus_data.py
+!tools/validate_pace_data.py
 
 # Root research notes and generated reports are not part of the code release.
 /*.md
@@ -254,9 +254,9 @@ tools/*
 /sft/
 /*.lock
 /tests/*
-!tests/test_pace_plus.py
+!tests/test_pace.py
 !tests/test_pairwise_experience_splits.py
-!tests/test_pace_plus_benchmark.py
+!tests/test_pace_benchmark.py
 !tests/test_release_pipeline.py
 
 # The vendored runtime is published as source code; upstream docs, examples,
@@ -279,7 +279,7 @@ tools/*
 *.orig
 *.bak
 /run_docker.sh
-/configs/pace_plus_sft.yaml
+/configs/pace_sft.yaml
 /verl/scripts/
 /verl/verl/experimental/**/shell/
 /verl/.git-blame-ignore-revs

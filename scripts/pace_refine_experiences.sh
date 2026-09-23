@@ -3,7 +3,7 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-CONFIG="${PROJECT_ROOT}/configs/pace_plus_msd.yaml"
+CONFIG="${PROJECT_ROOT}/configs/pace_msd.yaml"
 LIMIT_ARGS=()
 MODEL_ARGS=()
 REBUILD_ARGS=()
@@ -26,5 +26,5 @@ fi
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1}"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 export PYTHONPATH="${PROJECT_ROOT}/verl${PYTHONPATH:+:${PYTHONPATH}}"
-exec "${PYTHON_BIN}" "${PROJECT_ROOT}/tools/pace_plus_cli.py" \
+exec "${PYTHON_BIN}" "${PROJECT_ROOT}/tools/pace_cli.py" \
   --config "${CONFIG}" consolidate "${GROUP_ARGS[@]}" "${LIMIT_ARGS[@]}" "${MODEL_ARGS[@]}" "${REBUILD_ARGS[@]}"

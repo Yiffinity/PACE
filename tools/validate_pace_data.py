@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 
-from pace_plus_cli import validate_data
+from pace_cli import validate_data
 
 
 def main() -> None:

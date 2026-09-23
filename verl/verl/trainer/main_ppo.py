@@ -241,12 +241,12 @@ class TaskRunner:
         pprint(OmegaConf.to_container(config, resolve=True))
         OmegaConf.resolve(config)
 
-        if config.trainer.get("pace_plus", False):
-            from verl.trainer.pace_plus_preflight import validate_model_pair
+        if config.trainer.get("pace", False):
+            from verl.trainer.pace_preflight import validate_model_pair
 
             validate_model_pair(
-                config.trainer.pace_plus_teacher_path,
-                config.trainer.pace_plus_student_path,
+                config.trainer.pace_teacher_path,
+                config.trainer.pace_student_path,
             )
 
         actor_rollout_cls, ray_worker_group_cls = self.add_actor_rollout_worker(config)

@@ -514,17 +514,17 @@ class AgentLoopWorker:
             sampling_params["top_k"] = config.val_kwargs.top_k
             sampling_params["temperature"] = config.val_kwargs.temperature
 
-        # PACE_PLUS uses vLLM structured outputs for the reasoning JSON. The
-        # custom key is consumed by the PACE_PLUS vLLM server adapter, which
+        # PACE uses vLLM structured outputs for the reasoning JSON. The
+        # custom key is consumed by the PACE vLLM server adapter, which
         # provides a guided_json fallback for older vLLM releases.
-        pace_plus_schema_path = OmegaConf.select(self.config, "trainer.pace_plus_json_schema_path")
-        if pace_plus_schema_path:
-            schema_path = Path(str(pace_plus_schema_path)).expanduser().resolve()
+        pace_schema_path = OmegaConf.select(self.config, "trainer.pace_json_schema_path")
+        if pace_schema_path:
+            schema_path = Path(str(pace_schema_path)).expanduser().resolve()
             try:
                 schema = json.loads(schema_path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError) as exc:
-                raise RuntimeError(f"invalid PACE_PLUS JSON schema: {schema_path}: {exc}") from exc
-            sampling_params["pace_plus_structured_outputs"] = {"json": schema}
+                raise RuntimeError(f"invalid PACE JSON schema: {schema_path}: {exc}") from exc
+            sampling_params["pace_structured_outputs"] = {"json": schema}
 
         # by default, we assume it's a single turn agent
         if "agent_name" not in batch.non_tensor_batch:

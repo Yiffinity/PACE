@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CONFIG="${PROJECT_ROOT}/configs/pace_plus_msd.yaml"
+CONFIG="${PROJECT_ROOT}/configs/pace_msd.yaml"
 CHECKPOINT=""
 DATA=""
 EXTRA=()
@@ -17,4 +17,4 @@ done
 [[ -n "${CHECKPOINT}" ]] || { echo "--checkpoint is required" >&2; exit 2; }
 [[ -n "${DATA}" ]] || { echo "--data is required" >&2; exit 2; }
 export PYTHONPATH="${PROJECT_ROOT}/verl${PYTHONPATH:+:${PYTHONPATH}}"
-exec python3 "${PROJECT_ROOT}/tools/pace_plus_cli.py" --config "${CONFIG}" eval --checkpoint "${CHECKPOINT}" --data "${DATA}" "${EXTRA[@]}"
+exec python3 "${PROJECT_ROOT}/tools/pace_cli.py" --config "${CONFIG}" eval --checkpoint "${CHECKPOINT}" --data "${DATA}" "${EXTRA[@]}"

@@ -1,4 +1,4 @@
-"""Runtime acceptance checks for the one-step PACE+ training pilot."""
+"""Runtime acceptance checks for the one-step PACE training pilot."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from typing import Any, Mapping
 
 import torch
 
-from verl.trainer.pace_plus_schema import SchemaError, parse_reasoning
+from verl.trainer.pace_schema import SchemaError, parse_reasoning
 
 
 def update_pilot_summary(path: str | Path, updates: Mapping[str, Any]) -> None:

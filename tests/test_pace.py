@@ -29,19 +29,19 @@ def load_module(name: str, path: Path):
     return module
 
 
-schema = load_module("verl.trainer.pace_plus_schema", TRAINER / "pace_plus_schema.py")
-prompts = load_module("verl.trainer.pace_plus_prompts", TRAINER / "pace_plus_prompts.py")
-reflection = load_module("verl.trainer.pace_plus_reflection", TRAINER / "pace_plus_reflection.py")
-pool = load_module("verl.trainer.pace_plus_pool", TRAINER / "pace_plus_pool.py")
+schema = load_module("verl.trainer.pace_schema", TRAINER / "pace_schema.py")
+prompts = load_module("verl.trainer.pace_prompts", TRAINER / "pace_prompts.py")
+reflection = load_module("verl.trainer.pace_reflection", TRAINER / "pace_reflection.py")
+pool = load_module("verl.trainer.pace_pool", TRAINER / "pace_pool.py")
 weighted_pool = load_module(
-    "verl.trainer.pace_plus_weighted_pool",
-    TRAINER / "pace_plus_weighted_pool.py",
+    "verl.trainer.pace_weighted_pool",
+    TRAINER / "pace_weighted_pool.py",
 )
-extraction = load_module("verl.trainer.pace_plus_extraction", TRAINER / "pace_plus_extraction.py")
-modeling = sys.modules["verl.trainer.pace_plus_modeling"]
-preflight = load_module("pace_plus_preflight_test", TRAINER / "pace_plus_preflight.py")
-metrics = load_module("pace_plus_metrics_test", TRAINER / "pace_plus_metrics.py")
-reward = load_module("pace_plus_reward_test", TRAINER / "pace_plus_reward.py")
+extraction = load_module("verl.trainer.pace_extraction", TRAINER / "pace_extraction.py")
+modeling = sys.modules["verl.trainer.pace_modeling"]
+preflight = load_module("pace_preflight_test", TRAINER / "pace_preflight.py")
+metrics = load_module("pace_metrics_test", TRAINER / "pace_metrics.py")
+reward = load_module("pace_reward_test", TRAINER / "pace_reward.py")
 
 
 VALID_REASONING = {
@@ -683,7 +683,7 @@ class ReflectionTests(unittest.TestCase):
 
     def test_document_compares_student_with_verified_teacher(self):
         document = reflection.embedded_reflection_prompt_document()
-        self.assertEqual(document.path, "<embedded:pace_plus_reflection>")
+        self.assertEqual(document.path, "<embedded:pace_reflection>")
         self.assertTrue(document.sha256)
         sample = schema.SarcasmSample(
             sample_id="mmsd2:test",
@@ -705,7 +705,7 @@ class ReflectionTests(unittest.TestCase):
         self.assertNotIn("<ground_truth>", serialized)
         self.assertIn("<teacher_reasoning_origin>blind_correct", serialized)
         self.assertNotIn("<initial_teacher_blind_response>", serialized)
-        self.assertNotIn("In PACE_PLUS, MLLM A is the frozen teacher", serialized)
+        self.assertNotIn("In PACE, MLLM A is the frozen teacher", serialized)
         self.assertNotIn("the teacher is not presumed correct", serialized)
 
     def test_documentation_prompt_matches_embedded_prompt(self):
@@ -952,14 +952,14 @@ class ReflectionTests(unittest.TestCase):
     def test_v12_nonempty_cache_identity_is_available_for_targeted_backfill(self):
         self.assertIn(
             (
-                "pace-plus-comparative-reflection-v12-shared-teacher-student-errors",
+                "pace-comparative-reflection-v12-shared-teacher-student-errors",
                 "5a1ff5f158a9fbdd3b2486427333abd6e303314965194ae8c30ec64b56d7a9cf",
             ),
             reflection.LEGACY_REFLECTION_CACHE_IDENTITIES,
         )
         self.assertEqual(
             reflection.PROMPT_VERSION,
-            "pace-plus-comparative-reflection-v13-minimum-one-experience",
+            "pace-comparative-reflection-v13-minimum-one-experience",
         )
         self.assertIn(
             "minItems",
@@ -1955,10 +1955,10 @@ class PreflightTests(unittest.TestCase):
 
     def test_local_model_pair_is_compatible_and_multimodal(self):
         teacher_model = Path(
-            os.environ.get("PACE_PLUS_TEACHER_MODEL", "models/Qwen3.5-9B")
+            os.environ.get("PACE_TEACHER_MODEL", "models/Qwen3.5-9B")
         )
         student_model = Path(
-            os.environ.get("PACE_PLUS_STUDENT_MODEL", "models/Qwen3.5-4B")
+            os.environ.get("PACE_STUDENT_MODEL", "models/Qwen3.5-4B")
         )
         if not teacher_model.is_absolute():
             teacher_model = ROOT / teacher_model
@@ -1966,7 +1966,7 @@ class PreflightTests(unittest.TestCase):
             student_model = ROOT / student_model
         if not teacher_model.is_dir() or not student_model.is_dir():
             self.skipTest(
-                "set PACE_PLUS_TEACHER_MODEL and PACE_PLUS_STUDENT_MODEL "
+                "set PACE_TEACHER_MODEL and PACE_STUDENT_MODEL "
                 "to local multimodal model directories"
             )
         result = preflight.validate_model_pair(
@@ -2031,20 +2031,20 @@ class MetricTests(unittest.TestCase):
 class StageBSourceTests(unittest.TestCase):
     def test_direct_distillation_task_reward_is_zero(self):
         self.assertEqual(
-            reward.compute_score("pace_plus_msd", "prediction", "sarcastic"),
+            reward.compute_score("pace_msd", "prediction", "sarcastic"),
             0.0,
         )
 
     def test_stage_b_invariants_are_wired_to_native_distillation(self):
-        adapter = (TRAINER / "pace_plus_agent_loop.py").read_text(encoding="utf-8")
-        cli = (ROOT / "tools" / "pace_plus_cli.py").read_text(encoding="utf-8")
+        adapter = (TRAINER / "pace_agent_loop.py").read_text(encoding="utf-8")
+        cli = (ROOT / "tools" / "pace_cli.py").read_text(encoding="utf-8")
         main_ppo = (TRAINER / "main_ppo.py").read_text(encoding="utf-8")
-        config = (ROOT / "configs" / "pace_plus_msd.yaml").read_text(encoding="utf-8")
+        config = (ROOT / "configs" / "pace_msd.yaml").read_text(encoding="utf-8")
 
         self.assertIn("experience_conditioned_messages", adapter)
         self.assertIn("teacher must score the exact student-generated response token IDs", adapter)
         self.assertIn("aligned_logprobs[target_start:target_end]", adapter)
-        self.assertIn("PacePlusAgentLoopManager", adapter)
+        self.assertIn("PaceAgentLoopManager", adapter)
         self.assertIn("distillation.enabled=True", cli)
         self.assertIn("data.dataloader_num_workers=0", cli)
         self.assertIn("data.filter_overlong_prompts=False", cli)
@@ -2090,9 +2090,9 @@ class StageBSourceTests(unittest.TestCase):
         self.assertIn("device_map: cuda:0", config)
         self.assertNotIn("max_prompt_length: 4096", config)
         self.assertNotIn("experience_max_length:", config)
-        self.assertNotIn("pace_plus_experience_max_length", adapter)
-        self.assertIn("pace_plus_teacher_max_model_len", adapter)
-        evaluation_source = (TRAINER / "pace_plus_evaluation.py").read_text(
+        self.assertNotIn("pace_experience_max_length", adapter)
+        self.assertIn("pace_teacher_max_model_len", adapter)
+        evaluation_source = (TRAINER / "pace_evaluation.py").read_text(
             encoding="utf-8"
         )
         self.assertIn('{"none", "full_pool"}', evaluation_source)

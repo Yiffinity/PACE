@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from verl.trainer.pace_plus_preflight import assert_runtime_multimodal, inspect_checkpoint
+from verl.trainer.pace_preflight import assert_runtime_multimodal, inspect_checkpoint
 
 
 class ModelLoadError(RuntimeError):

@@ -1,133 +1,86 @@
-# PACE_PLUS
+# PACE
 
-Code for **PACEing the Evolution: Generalizing Multimodal Sarcasm Detection via Transferable Experience and On-Policy Distillation**.
+Official code for **PACEing the Evolution: Generalizing Multimodal Sarcasm Detection via Transferable Experience and On-Policy Distillation**.
 
-[Installation](#requirements) · [Quick start](#one-command-pipeline) · [Direct CLI](#direct-cli)
+![PACE overview](assets/overview.png)
 
-![PACE_PLUS overview](assets/overview.png)
+## Installation
 
-## Repository layout
-
-```text
-configs/                 YAML configuration and the reasoning JSON schema
-prompts/                 Readable comparative prompt checked against the code
-scripts/                 Pipeline and individual-stage launchers
-tools/                   Data preparation and command-line entry points
-verl/                    Training runtime and PACE_PLUS trainer extensions
-assets/                  Paper overview figure used in this README
-tests/                   Unit and contract tests
-```
-
-Generated samples, model checkpoints, caches, logs, evaluation reports, and other run artifacts are excluded from the public release through `.gitignore`. Place them in the local directories described below when running the code.
-
-## Requirements
-
-- Linux with NVIDIA CUDA and two visible GPUs for the full teacher/student pipeline.
-- Python 3.10 or newer.
-- One compatible multimodal teacher checkpoint and one smaller student checkpoint.
-- The source datasets with their image files.
-
-The default configuration expects the following repository-relative model layout:
-
-```text
-models/
-├── Qwen3.5-9B/       # frozen teacher
-└── Qwen3.5-4B/       # trainable student
-```
-
-You can use different checkpoints without editing the repository:
+Requires Linux, Python ≥ 3.10, and two CUDA GPUs (frozen teacher + trainable student).
 
 ```bash
-export PACE_PLUS_TEACHER_MODEL=models/Qwen3.5-9B
-export PACE_PLUS_STUDENT_MODEL=models/Qwen3.5-4B
-```
-
-Install the runtime from the repository root:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 bash setup.sh
 ```
 
-The core versions in [requirements.txt](requirements.txt) match the inspected local runtime: PyTorch 2.11.0, vLLM 0.20.2, Transformers 5.16.1, and Ray 2.58.0. The installer also resolves the vendored runtime's declared dependencies. For an existing environment, set `PYTHON_BIN` to its interpreter. GPU execution still requires compatible CUDA drivers and enough memory for both checkpoints.
+Pinned versions are in [requirements.txt](requirements.txt) (PyTorch 2.11.0, vLLM 0.20.2, Transformers 5.16.1, Ray 2.58.0).
 
-## Data layout
+Place checkpoints under `models/` (or override with `PACE_TEACHER_MODEL` / `PACE_STUDENT_MODEL`):
 
-The default split builder reads the following files:
+```text
+models/
+├── Qwen3.5-9B/   # teacher
+└── Qwen3.5-4B/   # student
+```
+
+## Datasets
+
+| Dataset | Role | Download |
+|---|---|---|
+| MMSD2.0 | source | [text](https://github.com/JoeYing1019/MMSD2.0) · images from [MMSD](https://github.com/headacheboy/data-of-multimodal-sarcasm-detection) |
+| DocMSU | source | [GitHub](https://github.com/fesvhtr/DocMSU) |
+| SarcNet | source | [GitHub](https://github.com/yuetanbupt/SarcNet) |
+| RedEval | OOD test only | [GitHub](https://github.com/TangBinghao/naacl2024) |
+
+Arrange them as follows (paths set in [configs/pace_msd.yaml](configs/pace_msd.yaml)):
 
 ```text
 datasets/
-├── MMSD2.0/data/text_json_final/{train,valid,test}.json
-├── MMSD2.0/data/dataset_image/
-├── DocMSU/data/{train,test}.jsonl
+├── MMSD2.0/data/text_json_final/{train,test}.json
+├── MMSD2.0/data/dataset_image/{image_id}.jpg
+├── DocMSU/data/{train,test}.jsonl       # fields: sample_id, image_path, text, label
 ├── DocMSU/docmsu_all.json
-└── sarcnet/data/{en,zh}/{train,valid,test}.jsonl
+├── sarcnet/data/{en,zh}/{train,test}.jsonl
+├── RedEval/reddit_test.json
+└── RedEval/images/{image_id}.jpg
 ```
 
-Each JSON/JSONL sample must provide an image path, post text, and a binary label. Relative image paths are resolved relative to the annotation file. Dataset licenses and access conditions remain the responsibility of the user.
+Please follow each dataset's original license and access terms.
 
-## One-command pipeline
-
-From the repository root, run:
+## Training
 
 ```bash
-bash scripts/run_pace_plus.sh
+bash scripts/run_pace.sh            # full pipeline
+bash scripts/run_pace.sh <stage>    # preflight | prepare | reason | extract | consolidate | train
 ```
 
-The launcher checks checkpoint metadata, prepares shared source samples, runs blind teacher/student reasoning, extracts comparative cues, consolidates the three source-pair pools, and starts OPED training for `mmsd2_docmsu` by default. Each pool filters the shared extraction by its own source IDs; training reads only the selected pair. Completed reasoning records and consolidation actions are reused when their fingerprints match.
+The pipeline samples source data, generates blind teacher/student reasoning, extracts comparative experience, consolidates one experience pool per source pair, and trains the student with on-policy distillation. Select the source pair with `PACE_GROUP` (`mmsd2_docmsu` [default], `mmsd2_sarcnet`, `docmsu_sarcnet`); the held-out source and RedEval are never used for mining or training.
 
-The implementation requires independent review of label-conditioned teacher corrections. If reviews are pending, extraction stops before consolidation and training. Review the image, text, gold label, and corrected reasoning in `experience_extraction/pairwise_train_shared/teacher_correction_review_queue.jsonl`, save decisions to `teacher_correction_reviews.jsonl` in the same directory, then rerun the command. The pipeline is not fully unattended when this queue is nonempty.
+> **Note:** If extraction stops on pending teacher-correction reviews, add one JSON line per queued sample to `teacher_correction_reviews.jsonl` with `sample_id`, `correction_fingerprint`, `decision` (`ACCEPT`/`REVISE`), `revised_reasoning`, and `rationale`, then rerun.
 
-<details>
-<summary>Correction review record format</summary>
-
-Write one JSON object per reviewed sample. Copy `sample_id` and `correction_fingerprint` from the queue so stale reviews cannot be reused. For an accepted correction:
-
-```json
-{"sample_id":"<id-from-queue>","correction_fingerprint":"<fingerprint-from-queue>","decision":"ACCEPT","revised_reasoning":null,"rationale":"<evidence-based review rationale>"}
-```
-
-For `REVISE`, supply a `revised_reasoning` object matching [the reasoning schema](configs/pace_plus_reasoning.schema.json), including the correct label. All queued corrections must be reviewed before extraction proceeds.
-
-</details>
-
-To run only a specific stage:
+## Evaluation
 
 ```bash
-bash scripts/run_pace_plus.sh preflight
-bash scripts/run_pace_plus.sh prepare
-bash scripts/run_pace_plus.sh reason
-bash scripts/run_pace_plus.sh extract
-bash scripts/run_pace_plus.sh consolidate
-bash scripts/run_pace_plus.sh train
+# Benchmark teacher/student on all datasets (results in evaluations/benchmarks/)
+bash scripts/pace_benchmark.sh --devices 0,1 --datasets mmsd2 sarcnet docmsu redeval
+
+# Evaluate a trained checkpoint on one file
+bash scripts/pace_eval.sh --checkpoint <ckpt_dir> --data <test_file>
 ```
 
-Useful environment overrides are repository-relative by default:
+All stages are also available through `python3 tools/pace_cli.py --help`.
 
-```bash
-PACE_PLUS_GROUP=mmsd2_docmsu \
-PACE_PLUS_TRAIN_DATA=data/pairwise_experience_splits/mmsd2_docmsu.jsonl \
-CUDA_VISIBLE_DEVICES=0,1 \
-bash scripts/run_pace_plus.sh train
+## Repository structure
+
+```text
+configs/   pipeline config and reasoning schema
+prompts/   comparative reflection prompt
+scripts/   pipeline, training, and evaluation launchers
+tools/     CLI and data preparation
+verl/      training runtime with PACE extensions
+tests/     unit tests (python3 -m unittest discover -s tests)
 ```
 
-The three supported source pairs are `mmsd2_docmsu`, `mmsd2_sarcnet`, and `docmsu_sarcnet`. Keep the remaining source dataset and RedEval out of mining and training for each corresponding evaluation setting. Benchmark dataset selection is explicit; the default benchmark command enumerates all configured datasets.
+## License
 
-## Direct CLI
-
-The main command is `tools/pace_plus_cli.py`. It exposes the same stages for automation:
-
-```bash
-python3 tools/pace_plus_cli.py --config configs/pace_plus_msd.yaml preflight
-python3 tools/pace_plus_cli.py --config configs/pace_plus_msd.yaml generate-reasonings \
-  --data data/pairwise_experience_splits/all_selected.jsonl
-python3 tools/pace_plus_cli.py --config configs/pace_plus_msd.yaml extract \
-  --data data/pairwise_experience_splits/all_selected.jsonl
-python3 tools/pace_plus_cli.py --config configs/pace_plus_msd.yaml consolidate \
-  --group mmsd2_docmsu
-python3 tools/pace_plus_cli.py --config configs/pace_plus_msd.yaml train \
-  --data data/pairwise_experience_splits/mmsd2_docmsu.jsonl --group mmsd2_docmsu
-```
-
-All public prompts enforce the same information boundary as the method: blind model calls receive the raw image and text; gold labels are introduced only for verified correction and training supervision; the student does not receive the consolidated experience pool at inference time.
+[MIT](LICENSE).

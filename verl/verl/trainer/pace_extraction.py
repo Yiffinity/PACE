@@ -1,4 +1,4 @@
-"""Resumable comparative experience extraction for PACE_PLUS Stage A."""
+"""Resumable comparative experience extraction for PACE Stage A."""
 
 from __future__ import annotations
 
@@ -11,17 +11,17 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
-from verl.trainer.pace_plus_config import get_required, project_path
-from verl.trainer.pace_plus_data import normalize_record
-from verl.trainer.pace_plus_modeling import MultimodalGenerator, VllmMultimodalGenerator
-from verl.trainer.pace_plus_preflight import validate_model_pair
-from verl.trainer.pace_plus_prompts import (
+from verl.trainer.pace_config import get_required, project_path
+from verl.trainer.pace_data import normalize_record
+from verl.trainer.pace_modeling import MultimodalGenerator, VllmMultimodalGenerator
+from verl.trainer.pace_preflight import validate_model_pair
+from verl.trainer.pace_prompts import (
     BLIND_REASONING_SYSTEM_PROMPT,
     TEACHER_LABEL_CORRECTION_SYSTEM_PROMPT,
     blind_messages,
     teacher_label_correction_messages,
 )
-from verl.trainer.pace_plus_reflection import (
+from verl.trainer.pace_reflection import (
     LEGACY_REFLECTION_CACHE_IDENTITIES,
     PROMPT_VERSION,
     ReflectionExperience,
@@ -32,7 +32,7 @@ from verl.trainer.pace_plus_reflection import (
     parse_reflection,
     repair_reflection_sentence_format,
 )
-from verl.trainer.pace_plus_schema import (
+from verl.trainer.pace_schema import (
     Reasoning,
     SarcasmSample,
     SchemaError,
@@ -1124,7 +1124,7 @@ def _prepare_reasoning_artifacts(
     if backend == "vllm":
         schema_value = generation.get(
             "json_schema_path",
-            config.get("opcd", {}).get("json_schema_path", "configs/pace_plus_reasoning.schema.json"),
+            config.get("opcd", {}).get("json_schema_path", "configs/pace_reasoning.schema.json"),
         )
         schema_path = project_path(config, schema_value)
         try:
