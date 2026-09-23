@@ -54,10 +54,6 @@ bash scripts/run_pace.sh            # full pipeline
 bash scripts/run_pace.sh <stage>    # preflight | prepare | reason | extract | consolidate | train
 ```
 
-The pipeline samples source data, generates blind teacher/student reasoning, extracts comparative experience, consolidates one experience pool per source pair, and trains the student with on-policy distillation. Select the source pair with `PACE_GROUP` (`mmsd2_docmsu` [default], `mmsd2_sarcnet`, `docmsu_sarcnet`); the held-out source and RedEval are never used for mining or training.
-
-> **Note:** If extraction stops on pending teacher-correction reviews, add one JSON line per queued sample to `teacher_correction_reviews.jsonl` with `sample_id`, `correction_fingerprint`, `decision` (`ACCEPT`/`REVISE`), `revised_reasoning`, and `rationale`, then rerun.
-
 ## Evaluation
 
 ```bash
