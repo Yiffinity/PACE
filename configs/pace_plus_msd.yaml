@@ -1,0 +1,195 @@
+project:
+  name: PACE_PLUS
+  seed: 42
+
+task:
+  name: multimodal_sarcasm_detection
+  labels:
+    - non-sarcastic
+    - sarcastic
+
+models:
+  teacher:
+    path: models/Qwen3.5-9B
+    trainable: false
+  student:
+    path: models/Qwen3.5-4B
+    trainable: true
+
+experience_extraction:
+  teacher_blind: true
+  student_blind: true
+  precomputed_teacher_reasoning_path: null
+  precomputed_student_reasoning_path: null
+  extractor_model: teacher
+  output_path: experience_extraction/pairwise_train_shared
+  generation:
+    backend: vllm
+    deterministic: true
+    max_new_tokens: 2048
+    thinking_token_budget: 1024
+    reflection_max_new_tokens: 2048
+    reflection_thinking_token_budget: 1024
+    reflection_batch_size: 16
+    reflection_max_model_len: 16384
+    max_model_len: 12288
+    max_num_seqs: 16
+    batch_size: 32
+    gpu_memory_utilization: 0.75
+    enforce_eager: false
+    parallel_roles: true
+    role_devices:
+      teacher: "0"
+      student: "1"
+    show_progress: true
+    json_schema_path: configs/pace_plus_reasoning.schema.json
+    device_map: cuda:0
+    chat_template_kwargs:
+      enable_thinking: true
+    json:
+      max_attempts: 3
+      failure_log_path: logs/experience_extraction_json_failures.jsonl
+
+experience_groups:
+  mmsd2_docmsu:
+    data_path: data/pairwise_experience_splits/mmsd2_docmsu.jsonl
+    extraction_path: experience_extraction/pairwise_train_shared
+    pool_path: experience_pools/mmsd2_docmsu/experience_pool.json
+  mmsd2_sarcnet:
+    data_path: data/pairwise_experience_splits/mmsd2_sarcnet.jsonl
+    extraction_path: experience_extraction/pairwise_train_shared
+    pool_path: experience_pools/mmsd2_sarcnet/experience_pool.json
+  docmsu_sarcnet:
+    data_path: data/pairwise_experience_splits/docmsu_sarcnet.jsonl
+    extraction_path: experience_extraction/pairwise_train_shared
+    pool_path: experience_pools/docmsu_sarcnet/experience_pool.json
+
+experience_pool:
+  path: experience_pools/all_selected/experience_pool.json
+  references:
+    target_size: 100
+    isolate_stages: true
+  generation:
+    deterministic: true
+    backend: vllm
+    max_model_len: 32768
+    max_num_seqs: 1
+    gpu_memory_utilization: 0.75
+    enable_prefix_caching: false
+    mamba_cache_mode: none
+    enforce_eager: false
+    empty_cache_after_generate: true
+    max_new_tokens: 512
+    max_input_tokens: 24576
+    max_accepted_experience_words: 150
+    max_experience_words: 100
+    show_progress: true
+    pipeline:
+      enabled: true
+      normalization_device_map: cuda:1
+      prefetch_candidates: 8
+    device_map: cuda:0
+    chat_template_kwargs:
+      enable_thinking: false
+    normalization:
+      max_new_tokens: 512
+      chat_template_kwargs:
+        enable_thinking: false
+    comparison:
+      max_new_tokens: 512
+      chat_template_kwargs:
+        enable_thinking: false
+    merge:
+      max_new_tokens: 512
+      chat_template_kwargs:
+        enable_thinking: false
+    json:
+      max_attempts: 3
+      failure_log_path: logs/consolidation_json_failures.jsonl
+
+opcd:
+  enabled: true
+  on_policy: true
+  teacher_uses_experience: true
+  student_uses_experience: false
+  same_student_prefix: true
+  kl_type: reverse
+  distillation_loss_mode: k3
+  train_batch_size: 8
+  ppo_mini_batch_size: 8
+  max_response_length: 768
+  learning_rate: 0.000001
+  total_training_steps: 50
+  save_freq: 5
+  n_gpus_per_node: 2
+  actor_gpus_per_node: 1
+  teacher_gpus_per_node: 1
+  nnodes: 1
+  rollout_engine: vllm
+  rollout_tensor_parallel_size: 1
+  teacher_tensor_parallel_size: 1
+  agent_loop_workers: 2
+  rollout_max_num_seqs: 8
+  teacher_max_num_seqs: 8
+  gpu_memory_utilization: 0.65
+  teacher_gpu_memory_utilization: 0.65
+  chat_template_kwargs:
+    enable_thinking: false
+  json_schema_path: configs/pace_plus_reasoning.schema.json
+
+evaluation:
+  output_path: evaluations
+  generation:
+    deterministic: true
+    max_new_tokens: 768
+    device_map: cuda:0
+    chat_template_kwargs:
+      enable_thinking: false
+    json:
+      max_attempts: 3
+      failure_log_path: logs/evaluation_json_failures.jsonl
+
+benchmark_evaluation:
+  output_path: evaluations/benchmarks
+  pause_file: evaluations/benchmarks/.pause
+  retry_invalid_by_default: true
+  datasets:
+    mmsd2:
+      test_path: datasets/MMSD2.0/data/text_json_final/test.json
+      image_dir: datasets/MMSD2.0/data/dataset_image
+    sarcnet:
+      test_paths:
+        en: datasets/sarcnet/data/en/test.jsonl
+        zh: datasets/sarcnet/data/zh/test.jsonl
+    docmsu:
+      test_path: datasets/DocMSU/data/test.jsonl
+    redeval:
+      test_path: datasets/RedEval/reddit_test.json
+      image_dir: datasets/RedEval/images
+  generation:
+    backend: vllm
+    deterministic: true
+    max_new_tokens: 4096
+    thinking_token_budget: 1024
+    max_model_len: 32768
+    max_num_seqs: 16
+    batch_size: 32
+    gpu_memory_utilization: 0.75
+    enforce_eager: false
+    show_progress: true
+    chat_template_kwargs:
+      enable_thinking: true
+    json:
+      max_attempts: 3
+
+pilot:
+  samples: 20
+  summary_path: pilot_summary.json
+
+ablation:
+  experience_source: comparative
+  inference_experience_mode: none
+
+output:
+  root: .
+  training_dir: training

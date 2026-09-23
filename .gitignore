@@ -1,50 +1,288 @@
-# Python environments, caches, and build metadata
-.venv/
-venv/
+
+wandb/*
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.orig
-*.rej
-*.egg-info/
-.pytest_cache/
-.ruff_cache/
-.mypy_cache/
-.coverage
-htmlcov/
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Local secrets
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
 .env
-.env.*
-!.env.example
-/apikey/
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Datasets are local inputs and must not be versioned.
-/data/
-/datasets/
+# Spyder project settings
+.spyderproject
+.spyproject
 
-# Models, weights, and training checkpoints are local artifacts.
-/model/
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
+
+# PyPI configuration file
+.pypirc
+
+# DS_Store
+.DS_Store
+
+# Ignore verl script outputs.
+**/outputs/
+**/wandb/
+**/checkpoints/
+data/*
+local-eval/*
+local-eval2/*
+core
+
+.amltconfig
+.amltignore
+# Public release keeps source code, configuration, tests, and the overview asset.
+# Local data, checkpoints, generated reasoning, and experiment history stay out.
 /models/
-/weights/
-/checkpoints/
-/pretrained/
-*.pt
-*.pth
-*.ckpt
-*.safetensors
-*.onnx
-*.h5
-*.hdf5
-*.pkl
-*.joblib
+/datasets/
+data/*
+logs/
+outputs/
+evaluations/
+training/
+experience_extraction/
+experience_pool/
+experience_pools/
+autoresearch/
+dataset_comparison/
+review_pages/
+showcase/
+sft/data/
+sft/outputs/
+sft/runs/
+sft/shared_artifacts/
+Paper/
+baseline/
+pace_ablation/
+pace_opsd/
+yg/
+unsloth_compiled_cache/
+runtime/
+.runtime/
 
-# Generated experiment output
-/artifacts/
-/outputs/
-/runs/
-/logs/
-/wandb/
-/mlruns/
-/tensorboard/
+# Keep only the public launchers from the research workspace.
+scripts/*
+!scripts/run_pace_plus.sh
+!scripts/pace_plus_prepare_experience_splits.sh
+!scripts/pace_plus_generate_reasonings.sh
+!scripts/pace_plus_extract_experiences.sh
+!scripts/pace_plus_refine_experiences.sh
+!scripts/pace_plus_train_opcd.sh
+!scripts/pace_plus_eval.sh
+!scripts/pace_plus_benchmark.sh
+
+# Keep the main public tools.
+tools/*
+!tools/pace_plus_cli.py
+!tools/prepare_pairwise_experience_splits.py
+!tools/prepare_opcd_msd_splits.py
+!tools/validate_pace_plus_data.py
+
+# Root research notes and generated reports are not part of the code release.
+/*.md
+!/README.md
+
+# Workspace-only environments and auxiliary research files.
+/.venv-*/
+/.codebuddy/
+/.pytest_cache/
+/.ruff_cache/
+/pilot_summary.json
+/MAIN_EXPERIMENT_RESULTS.md.lock
+/requirements_b200.txt
+/run_docker_b200.sh
+/setup_b200.sh
+/ray_node_setup.sh
+/prompts/*
+!/prompts/comparative_reflection.md
+/system_prompts/
+/sft/
+/*.lock
+/tests/*
+!tests/test_pace_plus.py
+!tests/test_pairwise_experience_splits.py
+!tests/test_pace_plus_benchmark.py
+!tests/test_release_pipeline.py
+
+# The vendored runtime is published as source code; upstream docs, examples,
+# CI metadata, and container recipes are outside this implementation.
+/verl/.agent/
+/verl/.claude/
+/verl/.codex/
+/verl/.gemini/
+/verl/.github/
+/verl/.vscode/
+/verl/.ruff_cache/
+/verl/docker/
+/verl/docs/
+/verl/examples/
+/verl/tests/
+/verl/verl.egg-info/
+/verl/*.md
+/verl/recipe/
+/verl/**/*.md
+*.orig
+*.bak
+/run_docker.sh
+/configs/pace_plus_sft.yaml
+/verl/scripts/
+/verl/verl/experimental/**/shell/
+/verl/.git-blame-ignore-revs
+/verl/.gitmodules
+/verl/.pre-commit-config.yaml
+/verl/.readthedocs.yaml

@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "visual_evidence": {"type": "string", "minLength": 1, "maxLength": 600},
+    "textual_evidence": {"type": "string", "minLength": 1, "maxLength": 600},
+    "explanation": {"type": "string", "minLength": 1, "maxLength": 1200},
+    "label": {"enum": ["sarcastic", "non-sarcastic"]}
+  },
+  "required": [
+    "visual_evidence",
+    "textual_evidence",
+    "explanation",
+    "label"
+  ],
+  "additionalProperties": false
+}
