@@ -2,28 +2,9 @@
 
 Code for **PACEing the Evolution: Generalizing Multimodal Sarcasm Detection via Transferable Experience and On-Policy Distillation**.
 
-[Overview](#method-overview) · [Installation](#requirements) · [Quick start](#one-command-pipeline) · [Configuration](#configuration) · [Tests](#tests)
-
-PACE_PLUS learns transferable sarcasm experiences from multiple source domains and distills them into a smaller multimodal model. The release contains source code, configuration, tests, and the manuscript's overview figure. Datasets, model weights, generated reasoning, and run reports are not included.
+[Installation](#requirements) · [Quick start](#one-command-pipeline) · [Direct CLI](#direct-cli)
 
 ![PACE_PLUS overview](assets/overview.png)
-
-## Method overview
-
-1. **Multi-source Contrastive MSD Experience Mining (MCEM)** compares blind teacher and student reasoning on heterogeneous source datasets.
-2. A weighted experience pool consolidates reusable sarcasm mechanisms through `ADD`, `MODIFY`, `UPVOTE`, and `DOWNVOTE`, retaining applicability conditions and exclusion boundaries.
-3. **On-Policy Experience Distillation (OPED)** gives the frozen teacher access to the pool and minimizes reverse KL on student-generated trajectories, using the same generated prefix for teacher scoring.
-4. The trained student performs inference from the image and text only.
-
-The figure shows the manuscript's conceptual workflow, including its LoRA update illustration. The bundled launcher's native VeRL training configuration uses FSDP2 and does not enable LoRA by default. Existing configuration keys and filenames use `opcd` for the OPED stage.
-
-| Component | Main implementation |
-| --- | --- |
-| Blind reasoning and verified teacher correction | [pace_plus_extraction.py](verl/verl/trainer/pace_plus_extraction.py) |
-| Comparative cue prompts | [pace_plus_reflection.py](verl/verl/trainer/pace_plus_reflection.py) |
-| Weighted experience consolidation | [pace_plus_weighted_pool.py](verl/verl/trainer/pace_plus_weighted_pool.py) |
-| Experience-conditioned student trajectories | [pace_plus_agent_loop.py](verl/verl/trainer/pace_plus_agent_loop.py) |
-| Pipeline configuration | [pace_plus_msd.yaml](configs/pace_plus_msd.yaml) |
 
 ## Repository layout
 
@@ -133,21 +114,6 @@ bash scripts/run_pace_plus.sh train
 
 The three supported source pairs are `mmsd2_docmsu`, `mmsd2_sarcnet`, and `docmsu_sarcnet`. Keep the remaining source dataset and RedEval out of mining and training for each corresponding evaluation setting. Benchmark dataset selection is explicit; the default benchmark command enumerates all configured datasets.
 
-## Configuration
-
-| Variable | Purpose |
-| --- | --- |
-| `PYTHON_BIN` | Python interpreter; defaults to `python3` |
-| `PACE_PLUS_CONFIG` | Pipeline YAML; defaults to `configs/pace_plus_msd.yaml` |
-| `PACE_PLUS_TEACHER_MODEL` / `PACE_PLUS_STUDENT_MODEL` | Override local checkpoint directories |
-| `PACE_PLUS_GROUP` | Source pair to train |
-| `PACE_PLUS_TRAIN_DATA` | Optional training JSONL or parquet for that pair |
-| `CUDA_VISIBLE_DEVICES` | Visible GPU IDs; defaults to `0,1` |
-
-Change generation limits, pool capacity, and training steps in the YAML. The default recipe selects source samples for mining and trains on the selected pair; it does not claim to reproduce every manuscript setting automatically. Custom training files must preserve the source/target separation.
-
-Optional runtime features use explicit environment settings: set `VERL_SHM_CACHE_DIR` before enabling shared-memory checkpoint caching, or `ASCEND_HOME_PATH` for a CANN toolkit installation. Neither feature is enabled by the default NVIDIA recipe.
-
 ## Direct CLI
 
 The main command is `tools/pace_plus_cli.py`. It exposes the same stages for automation:
@@ -165,19 +131,3 @@ python3 tools/pace_plus_cli.py --config configs/pace_plus_msd.yaml train \
 ```
 
 All public prompts enforce the same information boundary as the method: blind model calls receive the raw image and text; gold labels are introduced only for verified correction and training supervision; the student does not receive the consolidated experience pool at inference time.
-
-## Tests
-
-Run the public tests without launching GPU training:
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py'
-```
-
-Tests that need local checkpoints or benchmark datasets skip when those optional resources are absent. The launcher tests verify stage order, source-pair selection, and that pending correction review prevents training.
-
-## Anonymous release and license
-
-Project paths in the public configuration are relative to the repository or supplied through environment variables. Keep local credentials, checkpoints, dataset caches, generated outputs, and review records outside version control. The release omits project-author and submission metadata; upstream copyright and attribution notices are retained.
-
-The overview figure is derived from the accompanying manuscript. See [LICENSE](LICENSE) for the project license and [the vendored VeRL license](verl/LICENSE) and [notices](verl/Notice.txt) for third-party attribution.
